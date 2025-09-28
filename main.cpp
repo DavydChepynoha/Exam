@@ -47,12 +47,26 @@ int main() {
         }
     }
     
-    
+    //РАНДОМНО ЗАПОЛНЯЮ МЕСТА
+    for (int from = 0; from < size; from++) {
+        for (int to = 0; to < size; to++) {
+            if (from == to) continue;
+
+            Race &race = races[from][to];
+            int passengers = rand() % 9;
+
+            for (int i = 0; i < passengers; i++) {
+                int seat = race.soldSeats + 1;
+                race.tickets[race.soldSeats] = {"Пасажир", cities[from], cities[to], seat};
+                race.soldSeats++;
+            }
+        }
+    }
     
     while (true) {
         std::cout << "Вітаємо на станції м." << currentCity.name << std::endl;
         std::cout << "Ваші гроші: " << money << std::endl;
-        std::cout << "1 - Рейси\n2 - Скасування\n3 - Історія\nІнш - вийти\n: ";
+        std::cout << "1 - Рейси\n2 - Скасування\n3 - Історія\n4 - Поїхати по білету\nІнш - вийти\n: ";
         int choice;
         std::cin >> choice;
         
@@ -114,6 +128,7 @@ int main() {
                 
                 if (money < race.to.price){
                     std::cout<<"Недостатньо грошей"<<std::endl;
+                    continue;
                 }
                 
                 std::cout << "Введіть своє ім'я: ";
@@ -223,8 +238,76 @@ int main() {
             }
             history.close();
         }
+        else if (choice == 4) {
+            std::ifstream infile("tickets.txt");
+            if (!infile) {
+                std::cout << "У вас немає квитків.\n";
+                continue;
+            }
+            
+            std::cout << "Ваші квитки:\n";
+            std::string line;
+            int index = 0;
+            while (std::getline(infile, line)) {
+                std::cout << index << ") " << line << "\n";
+                index++;
+            }
+            infile.close();
+            
+            if (index == 0) {
+                std::cout << "Немає квитків для поїздки.\n";
+                continue;
+            }
+            
+            
+            //ПО СУТИ ТОТ ЖЕ КОД ЧТО И ПРИ ОТМЕНЕ, НО МЕНЯЕМ ГОРОД И НЕ ВОЗВРАЩАЕМ ДЕНЬГИ
+            int travelIndex;
+            std::cout << "Виберіть індекс квитка для поїздки: ";
+            std::cin >> travelIndex;
+
+            std::ifstream infile2("tickets.txt");
+            std::ofstream outfile("temp.txt");
+            int currentIndex = 0;
+
+            std::string name, from, to;
+            int price, seat;
+            
+            while (infile2 >> name >> from >> to >> seat >> price) {
+                if (currentIndex != travelIndex) {
+                    outfile << name << " " << from << " " << to << " " << seat << " " << price << "\n";
+                } else {
+                    currentCity = {to, price};
+                    
+                    //В ИСТОРИЮ, ОПЯТЬ ЖЕ, ТОЖЕ САМОЕ ЧТО И ПРИ ОТМЕНЕ, ТОЛЬКО ПОЕХАЛ, А НЕ ОТМЕНИЛ
+                    std::ofstream historyFile("history.txt", std::ios::app);
+                    historyFile << "Поїхав: " << from
+                    << " Місто: " << to
+                    << " Місце: " << seat
+                    << " Ім'я: " << name << "\n";
+                    historyFile.close();
+                    std::cout << "Ви поїхали з " << from << " до " << to << std::endl;
+                }
+                currentIndex++;
+            }
+            
+            infile2.close();
+            outfile.close();
+            
+            std::ifstream temp("temp.txt");
+            std::ofstream tickets("tickets.txt");
+            while (std::getline(temp, line)) {
+                tickets << line << "\n";
+            }
+            temp.close();
+            tickets.close();
+            
+        }
         else {
             break;
         }
     }
 }
+
+
+//ЗАМЕТКИ
+//МОЖНО РЕСТАРТНУТЬ ПРОГУ И ОСТАТЬСЯ С КУПЛЕНЫМИ БИЛЕТАМИ. ЭТО ВСЕ СДЕЛАНО СПЕЦИАЛЬНО ЧТО БЫ ПРИ ОКОНЧАНИИ ДЕНЕГ НЕ ИСПЫТЫВАТЬ ТРУДНОСТИ ОТМЕНЯТЬ БИЛЕТЫ НА КАКОЙ ТО СТАНЦИИ

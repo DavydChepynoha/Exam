@@ -264,6 +264,8 @@ int main() {
                     money += price;
                     // СПИСУЕМ КОМИССИЮ)
                     money -= 10;
+                    // УМЕНЬШАЕМ МЕСТО НА ОДИН (МЫ ЖЕ ОТМЕНИЛИ)
+                    races[from][to] -= 1;
                     std::cout << "Білет скасовано! Повернуто " << price - 10 << " грн" << std::endl;
                 }
                 currentIndex++;
@@ -339,6 +341,9 @@ int main() {
                         << " Ім'я: " << name << "\n";
                     historyFile.close();
                     std::cout << "Ви поїхали з " << from << " до " << to << std::endl;
+                    // УМЕНЬШАЕМ МЕСТО НА ОДИН (МЫ ЖЕ ОТМЕНИЛИ)
+                    races[from][to] -= 1;
+                    // НИЧЕГО НЕ ЗАБИРАЕМ И НЕ МЕНЯЕМ МЕСТО ПОТОМУ ЧТО ЭТО УЖЕ БЫЛО СДЕЛАННО ПРИ ПОКУПКЕ
                 }
                 currentIndex++;
             }
@@ -362,7 +367,8 @@ int main() {
         }
 
         else {
-            break;
+            std::cout << "Неправильний вибір" << std::endl;
+            continue;
         }
     }
 
